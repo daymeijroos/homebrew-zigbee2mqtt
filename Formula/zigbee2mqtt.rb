@@ -27,11 +27,14 @@ class Zigbee2mqtt < Formula
     config_file = config_dir/"configuration.yaml"
     FileUtils.mkdir_p config_dir
   
-    device_name = `ioreg -p IOUSB -l | grep -iE '("USB Product Name"|"kUSBProductString") *= *".*zigbee.*"' | awk -F'"' '{print $4}'`.strip
+    device_names = `ioreg -p IOUSB -l | grep -iE '("USB Product Name"|"kUSBProductString") *= *".*zigbee.*"' | awk -F'"' '{print $4}'`.lines.map(&:strip).reject(&:empty?)
+    device_name = device_names.first || ""
   
     if device_name.empty?
       opoo "No Zigbee USB device detected via ioreg. You'll need to set the serial.port manually in configuration.yaml"
       device_name = "ttyUSB0"
+    else
+      ohai "Detected Zigbee device name: '#{device_name}'"
     end
   
     ports = Dir.glob("/dev/tty.*").select do |dev|
@@ -43,6 +46,8 @@ class Zigbee2mqtt < Formula
     if port.nil? || port.empty?
       opoo "Could not automatically determine serial port for Zigbee device '#{device_name}'."
       port = "/dev/ttyUSB0"
+    else
+      ohai "Using serial port: #{port}"
     end
   
     unless config_file.exist?
@@ -59,7 +64,8 @@ class Zigbee2mqtt < Formula
           port: 9999
       EOS
     end
-  end  
+  end
+  
 
   service do
     run [opt_bin/"zigbee2mqtt"]
