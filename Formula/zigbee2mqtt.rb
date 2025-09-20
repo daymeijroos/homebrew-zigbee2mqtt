@@ -54,6 +54,7 @@ class Zigbee2mqtt < Formula
           port: '#{port}'
         frontend:
           enabled: true  
+          port: 9999
       EOS
     end
   end
