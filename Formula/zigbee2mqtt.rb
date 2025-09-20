@@ -29,7 +29,7 @@ class Zigbee2mqtt < Formula
 
   def post_install
     require "fileutils"
-    config_dir = HOMEBREW_PREFIX/"var/zigbee2mqtt"
+    config_dir = HOMEBREW_PREFIX/"var/zigbee2mqtt/data"
     config_file = config_dir/"configuration.yaml"
     FileUtils.mkdir_p config_dir
 
