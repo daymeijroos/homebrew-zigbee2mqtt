@@ -26,30 +26,35 @@ class Zigbee2mqtt < Formula
     config_dir = HOMEBREW_PREFIX/"var/zigbee2mqtt"
     config_file = config_dir/"configuration.yaml"
     FileUtils.mkdir_p config_dir
-  
-    device_names = `ioreg -p IOUSB -l | grep -iE '("USB Product Name"|"kUSBProductString") *= *".*zigbee.*"' | awk -F'"' '{print $4}'`.lines.map(&:strip).reject(&:empty?)
-    device_name = device_names.first || ""
-  
+
+    device_name = `ioreg -p IOUSB -l | grep -iE '"USB Product Name" *= *".*zigbee.*"' | awk -F'"' '{print $4}' | head -n1`.strip
+
     if device_name.empty?
       opoo "No Zigbee USB device detected via ioreg. You'll need to set the serial.port manually in configuration.yaml"
-      device_name = "ttyUSB0"
+      device_name = nil
     else
-      ohai "Detected Zigbee device name: '#{device_name}'"
+      ohai "Detected Zigbee USB device: #{device_name}"
     end
-  
-    ports = Dir.glob("/dev/tty.*").select do |dev|
-      dev.downcase.include?(device_name.downcase.gsub(' ', '.'))
+
+    port = nil
+    if device_name
+      words = device_name.downcase.split(" ")
+      words.each do |word|
+        candidate = `ls /dev/tty.* 2>/dev/null | grep -i #{word} | head -n1`.strip
+        unless candidate.empty?
+          port = candidate
+          break
+        end
+      end
     end
-  
-    port = ports.first
-  
+
     if port.nil? || port.empty?
-      opoo "Could not automatically determine serial port for Zigbee device '#{device_name}'."
-      port = "/dev/ttyUSB0"
+      opoo "Could not automatically determine serial port for Zigbee device '#{device_name || 'unknown'}'."
+      port = "/dev/ttyUSB0" # fallback
     else
-      ohai "Using serial port: #{port}"
+      ohai "Detected serial port: #{port}"
     end
-  
+
     unless config_file.exist?
       config_file.write <<~EOS
         homeassistant: false
@@ -60,12 +65,11 @@ class Zigbee2mqtt < Formula
         serial:
           port: '#{port}'
         frontend:
-          enabled: true  
+          enabled: true
           port: 9999
       EOS
     end
   end
-  
 
   service do
     run [opt_bin/"zigbee2mqtt"]
