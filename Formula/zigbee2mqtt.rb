@@ -11,9 +11,12 @@ class Zigbee2mqtt < Formula
   def install
     prefix.install Dir["*"]
     cd prefix do
-      system "npm", "ci"       # install all dependencies (including dev)
-      system "npm", "run", "build"  # build the project (tsc runs here)
-      system "npm", "prune", "--production"  # remove dev dependencies after build
+      # Ensure environment PATH includes node_modules/.bin to find tsc
+      ENV.prepend_path "PATH", "#{prefix}/node_modules/.bin"
+  
+      system "npm", "ci"
+      system "npm", "run", "build"
+      system "npm", "prune", "--production"
     end
   
     (bin/"zigbee2mqtt").write <<~EOS
