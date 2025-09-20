@@ -78,13 +78,16 @@ class Zigbee2mqtt < Formula
   end
 
   service do
-    run [opt_bin/"zigbee2mqtt", "--data", "#{HOMEBREW_PREFIX}/var/zigbee2mqtt/data"]
+    run [opt_bin/"zigbee2mqtt"]
     keep_alive true
     working_dir var/"zigbee2mqtt"
     log_path var/"log/zigbee2mqtt.log"
     error_log_path var/"log/zigbee2mqtt.error.log"
   
-    environment_variables PATH: "#{Formula["node@18"].opt_bin}:/usr/bin:/bin"
+    environment_variables({
+      PATH: "#{Formula["node@18"].opt_bin}:/usr/bin:/bin",
+      "ZIGBEE2MQTT_DATA" => "#{HOMEBREW_PREFIX}/var/zigbee2mqtt/data"
+    })
   end
   
 
