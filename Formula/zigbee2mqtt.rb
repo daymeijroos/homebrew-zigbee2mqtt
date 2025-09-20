@@ -2,7 +2,7 @@ class Zigbee2mqtt < Formula
   desc "Zigbee2MQTT – bridge between Zigbee devices and MQTT"
   homepage "https://www.zigbee2mqtt.io/"
   url "https://github.com/Koenkk/zigbee2mqtt/archive/refs/tags/1.40.2.tar.gz"
-  sha256 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"  # Replace with actual sha256
+  sha256 "17b2103efcd7603e05238b97fbe91d9b256dc1a10aba2174e82be9dfb7001176"  # Replace with actual sha256
   license "MIT"
 
   depends_on "node"
