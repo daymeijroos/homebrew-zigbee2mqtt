@@ -11,15 +11,18 @@ class Zigbee2mqtt < Formula
   def install
     prefix.install Dir["*"]
     cd prefix do
-      system "npm", "ci", "--production"
+      system "npm", "ci"       # install all dependencies (including dev)
+      system "npm", "run", "build"  # build the project (tsc runs here)
+      system "npm", "prune", "--production"  # remove dev dependencies after build
     end
-
+  
     (bin/"zigbee2mqtt").write <<~EOS
       #!/bin/bash
       exec "#{Formula["node"].opt_bin}/node" "#{prefix}/index.js" "$@"
     EOS
     chmod 0755, bin/"zigbee2mqtt"
   end
+  
 
   def post_install
     require "fileutils"
