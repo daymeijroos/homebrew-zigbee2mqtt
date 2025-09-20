@@ -2,22 +2,17 @@ class Zigbee2mqtt < Formula
   desc "Zigbee2MQTT – bridge between Zigbee devices and MQTT"
   homepage "https://www.zigbee2mqtt.io/"
   url "https://github.com/Koenkk/zigbee2mqtt/archive/refs/tags/1.40.2.tar.gz"
-  sha256 "17b2103efcd7603e05238b97fbe91d9b256dc1a10aba2174e82be9dfb7001176"  # Replace with actual sha256
+  sha256 "17b2103efcd7603e05238b97fbe91d9b256dc1a10aba2174e82be9dfb7001176"
   license "MIT"
 
   depends_on "node"
   depends_on "mosquitto"
 
   def install
-    # Install source code
     prefix.install Dir["*"]
-
-    # Install Node dependencies
     cd prefix do
       system "npm", "ci", "--production"
     end
-
-    # Create a wrapper script to launch Zigbee2MQTT
     (bin/"zigbee2mqtt").write <<~EOS
       #!/bin/bash
       exec "#{Formula["node"].opt_bin}/node" "#{prefix}/index.js" "$@"
@@ -27,27 +22,26 @@ class Zigbee2mqtt < Formula
 
   def post_install
     require "fileutils"
-
     config_dir = HOMEBREW_PREFIX/"var/zigbee2mqtt"
     config_file = config_dir/"configuration.yaml"
-
     FileUtils.mkdir_p config_dir
 
-    # Try to detect Zigbee USB device using ioreg
-    device_name = `ioreg -p IOUSB -l | grep -iE '"Product" = ".*zigbee.*"' | awk -F'"' '{print $4}'`.strip
+    # Detect Zigbee USB device via ioreg
+    device_name = `ioreg -p IOUSB -l | grep -iE '("USB Product Name"|"kUSBProductString") *= *".*zigbee.*"' | awk -F'"' '{print $4}'`.strip
 
     if device_name.empty?
-      odie "No Zigbee device found via ioreg. Please edit #{config_file} manually and set serial.port"
+      opoo "No Zigbee USB device detected via ioreg. You'll need to set the serial.port manually in configuration.yaml"
+      device_name = "ttyUSB0" # fallback placeholder
     end
 
     port = `ls /dev/tty.* | grep -i "$(echo #{device_name} | tr ' ' '.')"` rescue ""
     port.strip!
 
     if port.empty?
-      odie "Could not detect serial port for Zigbee device. Please edit #{config_file} manually."
+      opoo "Could not automatically determine serial port for Zigbee device '#{device_name}'."
+      port = "/dev/ttyUSB0" # fallback
     end
 
-    # Only write config if it doesn't already exist
     unless config_file.exist?
       config_file.write <<~EOS
         homeassistant: false
@@ -64,7 +58,7 @@ class Zigbee2mqtt < Formula
   def plist
     <<~EOS
       <?xml version="1.0" encoding="UTF-8"?>
-      <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN" \
+      <!DOCTYPE plist PUBLIC "-//Apple Computer//DTD PLIST 1.0//EN"
         "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
       <plist version="1.0">
         <dict>
@@ -90,7 +84,6 @@ class Zigbee2mqtt < Formula
   end
 
   test do
-    assert_match "Zigbee2MQTT", shell_output("#{bin}/zigbee2mqtt --version 2>&1", 1)
+    system "#{bin}/zigbee2mqtt", "--version"
   end
 end
-
