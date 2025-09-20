@@ -78,7 +78,7 @@ class Zigbee2mqtt < Formula
   end
 
   service do
-    run [opt_bin/"zigbee2mqtt"]
+    run [opt_bin/"zigbee2mqtt", "--data", "#{HOMEBREW_PREFIX}/var/zigbee2mqtt/data"]
     keep_alive true
     working_dir var/"zigbee2mqtt"
     log_path var/"log/zigbee2mqtt.log"
