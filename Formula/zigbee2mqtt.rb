@@ -77,7 +77,10 @@ class Zigbee2mqtt < Formula
     working_dir var/"zigbee2mqtt"
     log_path var/"log/zigbee2mqtt.log"
     error_log_path var/"log/zigbee2mqtt.error.log"
+  
+    environment_variables PATH: "#{Formula["node"].opt_bin}:/usr/bin:/bin"
   end
+  
 
   test do
     system "#{bin}/zigbee2mqtt", "--version"
