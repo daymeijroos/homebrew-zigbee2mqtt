@@ -70,6 +70,7 @@ class Zigbee2mqtt < Formula
           server: 'mqtt://localhost'
         serial:
           port: '#{port}'
+          adapter: ember
         frontend:
           enabled: true
           port: 9999
