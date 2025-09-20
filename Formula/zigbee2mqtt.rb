@@ -5,7 +5,7 @@ class Zigbee2mqtt < Formula
   sha256 "17b2103efcd7603e05238b97fbe91d9b256dc1a10aba2174e82be9dfb7001176"
   license "MIT"
 
-  depends_on "node"
+  depends_on "node@18"
   depends_on "mosquitto"
 
   def install
@@ -21,7 +21,7 @@ class Zigbee2mqtt < Formula
   
     (bin/"zigbee2mqtt").write <<~EOS
       #!/bin/bash
-      exec "#{Formula["node"].opt_bin}/node" "#{prefix}/index.js" "$@"
+      exec "#{Formula["node@18"].opt_bin}/node" "#{prefix}/index.js" "$@"
     EOS
     chmod 0755, bin/"zigbee2mqtt"
   end
@@ -84,11 +84,16 @@ class Zigbee2mqtt < Formula
     log_path var/"log/zigbee2mqtt.log"
     error_log_path var/"log/zigbee2mqtt.error.log"
   
-    environment_variables PATH: "#{Formula["node"].opt_bin}:/usr/bin:/bin"
+    environment_variables PATH: "#{Formula["node@18"].opt_bin}:/usr/bin:/bin"
   end
   
 
   test do
     system "#{bin}/zigbee2mqtt", "--version"
+  end
+
+  def post_uninstall
+    config_dir = HOMEBREW_PREFIX/"var/zigbee2mqtt"
+    config_dir.rmtree if config_dir.exist?
   end
 end
