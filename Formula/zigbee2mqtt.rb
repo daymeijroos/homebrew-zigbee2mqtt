@@ -52,6 +52,8 @@ class Zigbee2mqtt < Formula
           server: 'mqtt://localhost'
         serial:
           port: '#{port}'
+        frontend:
+          enabled: true  
       EOS
     end
   end
